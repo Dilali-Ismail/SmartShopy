@@ -3,6 +3,7 @@ package org.usermanagement.smartshopy.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.usermanagement.smartshopy.dto.request.CreateCustomerDTO;
+import org.usermanagement.smartshopy.dto.request.UpdateCustomerDTO;
 import org.usermanagement.smartshopy.dto.response.CustomerDto;
 import org.usermanagement.smartshopy.entity.Customer;
 
@@ -10,5 +11,5 @@ import org.usermanagement.smartshopy.entity.Customer;
 public interface CustomerMapper {
      CustomerDto toDto(Customer customer);
      Customer toEntity(CreateCustomerDTO customerDTO);
-     void UpdateEntityfromDto(CustomerDto dto , @MappingTarget Customer customer);
+     void UpdateEntityfromDto(UpdateCustomerDTO dto , @MappingTarget Customer customer);
 }
