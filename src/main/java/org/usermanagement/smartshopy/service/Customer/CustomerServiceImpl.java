@@ -32,7 +32,7 @@ public class CustomerServiceImpl implements CustomerService {
 
    public  CustomerDto createCustomeer(CreateCustomerDTO dto){
 
-       if(customerRepository.existByEmail(dto.getEmail())){
+       if(customerRepository.existsByEmail(dto.getEmail())){
            throw new BadRequestException("Email deja utiliser");
        }
        if(userRepository.existsByUsername(dto.getUsername())){
