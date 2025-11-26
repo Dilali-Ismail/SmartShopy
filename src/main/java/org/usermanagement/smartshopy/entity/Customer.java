@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.usermanagement.smartshopy.enums.CustomerTier;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.security.DrbgParameters;
 import java.time.LocalDateTime;
 
 @Entity
@@ -55,5 +57,46 @@ public class Customer {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+  public void updateTier(){
+      this.tier = CustomerTier.CalculerTier(
+              this.totalOrders,
+              this.totalSpent.doubleValue()
+      );
+  }
+
+  public boolean CanapplyDisount(BigDecimal orderSubtotal){
+      if(this.tier.equals(CustomerTier.BASIC)){
+          return false ;
+      }
+
+      double minorder = this.tier.getMinOrderForDiscount();
+
+      return orderSubtotal.doubleValue() >= minorder;
+  }
+
+  public BigDecimal Calculediscount(BigDecimal orderSubtotal ){
+
+     if(!CanapplyDisount(orderSubtotal)){
+         return BigDecimal.ZERO;
+     }
+
+     BigDecimal discountPercentage = new BigDecimal(this.tier.getRemisePercentage());
+
+     BigDecimal discount = orderSubtotal.multiply(discountPercentage).divide(new BigDecimal("100") , 2 , RoundingMode.HALF_UP);
+
+     return discount;
+  }
+
+  public void UpdateState(BigDecimal orderTotal){
+      this.totalOrders++;
+      this.totalSpent = this.totalSpent.add(orderTotal);
+
+      this.lastOrderDate = LocalDateTime.now();
+
+      if(this.firstOrderDate == null){
+          this.firstOrderDate = LocalDateTime.now();
+      }
+      updateTier();
+  }
 
 }

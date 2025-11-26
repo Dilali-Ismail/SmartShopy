@@ -14,16 +14,16 @@ public enum CustomerTier {
     private final int minorder;
     private final double  mintotalspent;
     private final int RemisePercentage;
-    private final double minSpentInOneOrder ;
+    private final double minOrderForDiscount ;
 
     CustomerTier(int minOrders, double minSpent, int discountPercentage, double minOrderForDiscount) {
         this.minorder = minOrders;
         this.mintotalspent = minSpent;
         this.RemisePercentage = discountPercentage;
-        this.minSpentInOneOrder = minOrderForDiscount;
+        this.minOrderForDiscount = minOrderForDiscount;
     }
 
-    private static  CustomerTier CalculerTier(int totalorders , double totalspent ){
+    public static  CustomerTier CalculerTier(int totalorders , double totalspent ){
         if(totalorders >= PLATINUM.minorder || totalspent >= PLATINUM.mintotalspent){
             return PLATINUM;
         }
