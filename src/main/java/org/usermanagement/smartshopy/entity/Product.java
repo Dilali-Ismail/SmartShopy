@@ -43,4 +43,35 @@ public class Product {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    public boolean isAvailable(int requestedQuantity) {
+        return this.active && this.stockQuantity >= requestedQuantity;
+    }
+
+    public void decrementStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("La quantité doit être positive");
+        }
+
+        if (this.stockQuantity < quantity) {
+            throw new IllegalArgumentException(
+                    String.format("Stock insuffisant pour le produit '%s'. Disponible: %d, Demandé: %d",
+                            this.name, this.stockQuantity, quantity)
+            );
+        }
+
+        this.stockQuantity -= quantity;
+    }
+
+    public void incrementStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("La quantité doit être positive");
+        }
+
+        this. stockQuantity += quantity;
+    }
+
+    public boolean isLowStock() {
+        return this.stockQuantity < 10;
+    }
+
 }
