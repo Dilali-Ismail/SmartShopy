@@ -17,7 +17,7 @@ public class ProductDTO {
     private BigDecimal price;
     private Integer stockQuantity;
     private Boolean active;
-    private Boolean lowStock;  // Indique si stock < 10
+    private Boolean lowStock;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -24,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO createProduct(CreateProductDTO dto) {
 
         Product product = productMapper.toEntity(dto);
+        product.setActive(true);
         productRepository.save(product);
         return productMapper.toDTO(product);
     }

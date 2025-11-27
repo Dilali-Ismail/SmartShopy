@@ -27,12 +27,4 @@ public class CreateProductDTO {
     @NotNull(message = "La quantité en stock est obligatoire")
     private Integer stockQuantity;
 
-    @Size(max = 100, message = "La catégorie ne doit pas dépasser 100 caractères")
-    private String category;
-
-
-
-
-
-
 }
