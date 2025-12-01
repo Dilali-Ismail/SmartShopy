@@ -9,10 +9,9 @@ import org.usermanagement.smartshopy.entity.OrderItem;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
-    @Mapping(target = "items", source = "items")
+
     OrderDTO toDTO(Order order);
 
-    @Mapping(target = "product",source = "product")
     OrderDTO.OrderItemDTO orderItemToDTO(OrderItem orderItem);
 
 }
