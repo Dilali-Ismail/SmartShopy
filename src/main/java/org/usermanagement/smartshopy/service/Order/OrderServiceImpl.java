@@ -3,21 +3,16 @@ package org.usermanagement.smartshopy.service.Order;
 import ch.qos.logback.core.net.server.Client;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
 import org.springframework.stereotype.Service;
 import org.usermanagement.smartshopy.dto.request.CreateOrderDTO;
 import org.usermanagement.smartshopy.dto.response.OrderDTO;
-import org.usermanagement.smartshopy.entity.Customer;
-import org.usermanagement.smartshopy.entity.Order;
-import org.usermanagement.smartshopy.entity.OrderItem;
-import org.usermanagement.smartshopy.entity.Product;
+import org.usermanagement.smartshopy.entity.*;
 import org.usermanagement.smartshopy.enums.OrderStatus;
 import org.usermanagement.smartshopy.exception.BadRequestException;
 import org.usermanagement.smartshopy.exception.NotFoundException;
 import org.usermanagement.smartshopy.mapper.OrderMapper;
-import org.usermanagement.smartshopy.repository.CustomerRepository;
-import org.usermanagement.smartshopy.repository.OrderRepository;
-import org.usermanagement.smartshopy.repository.ProductRepository;
-import org.usermanagement.smartshopy.repository.UserRepository;
+import org.usermanagement.smartshopy.repository.*;
 import org.usermanagement.smartshopy.service.Product.ProductService;
 
 import java.math.BigDecimal;
@@ -36,6 +31,7 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final PromoCodeRepository promoCodeRepository;
     private final OrderMapper orderMapper;
 
     public OrderDTO createOrder(CreateOrderDTO request){
@@ -66,9 +62,9 @@ public class OrderServiceImpl implements OrderService {
 
             order.addItem(orderItem);
         }
-        calculateOrderTotals(order);
-        orderRepository.save(order);
 
+        calculateOrderTotals(order,request.getPromoCode());
+        orderRepository.save(order);
         return orderMapper.toDTO(order);
 }
     @Override
@@ -123,12 +119,11 @@ public class OrderServiceImpl implements OrderService {
                 throw new BadRequestException(e.getMessage());
             }
         }
-        //mettre a jour les statistique de customer
+
         Customer customer = order.getCustomer();
         customer.UpdateState(order.getTotalTTC());
         customerRepository.save(customer);
 
-        //change the statut of order
         order.setStatus(OrderStatus.CONFIRMED);
         order.setConfirmedAt(LocalDateTime.now());
         orderRepository.save(order);
@@ -166,15 +161,53 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDTO(order);
     }
-    private void calculateOrderTotals(Order order){
+
+    public List<OrderDTO> getAllOrderContientProduct(Long productID){
+
+        return orderRepository.findAll().stream()
+                .filter(order -> order.getItems().stream()
+                        .anyMatch(OrderItem -> OrderItem.getProduct().getId().equals(productID)))
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    private void calculateOrderTotals(Order order , String promoCodeStr){
         //subtotal
         BigDecimal subtotal = order.getItems().stream().map(OrderItem::getSubtotal).reduce(BigDecimal.ZERO,BigDecimal::add);
         order.setSubtotalHT(subtotal);
         //discount loyalty
         BigDecimal loyaltyDiscount = order.getCustomer().Calculediscount(subtotal);
         order.setLoyaltyDiscount(loyaltyDiscount);
+
+        BigDecimal totalAfterLoyalty = subtotal.subtract(loyaltyDiscount);
+
+        BigDecimal promoDiscount = BigDecimal.ZERO;
+
+        if (promoCodeStr != null && !promoCodeStr.isBlank()) {
+            String code = promoCodeStr.trim().toUpperCase();
+
+            PromoCode promoCode = promoCodeRepository. findByCode(code)
+                    .orElseThrow(() -> new NotFoundException("Code promo '" + code + "' introuvable"));
+
+            if (! promoCode.hasUsagesLeft()) {
+                throw new BadRequestException("Le code promo '" + code + "' a atteint sa limite d'utilisations (" + promoCode.getMaxUsages() + "/" + promoCode.getMaxUsages() + ")");
+            }
+
+            promoDiscount = totalAfterLoyalty
+                    .multiply(new BigDecimal(promoCode.getDiscountPercentage()))
+                    .divide(new BigDecimal("100"), 2, RoundingMode. HALF_UP);
+
+            order.setPromoCode(code);
+            order.setPromoDiscount(promoDiscount);
+
+            promoCode.incrementUsage();
+            promoCodeRepository. save(promoCode);
+
+        }
+
         //resultat de subsract de loyalty from subtotal
-       BigDecimal totalAfterDisocunt = subtotal.subtract(loyaltyDiscount);
+       BigDecimal totalAfterDisocunt = totalAfterLoyalty.subtract(promoDiscount);
        order.setTotalAfterDiscount(totalAfterDisocunt);
 
        //Tva
@@ -188,7 +221,6 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalTTC(TTC);
 
         //rest a payer
-
         order.setRemainingAmount(TTC.subtract(order.getAmountPaid()));
     }
 }

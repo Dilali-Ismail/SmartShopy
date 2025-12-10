@@ -1,0 +1,15 @@
+package org.usermanagement.smartshopy.security;
+
+
+import org.usermanagement.smartshopy.enums.UserRole;
+
+import java.lang.annotation.Target;
+import java.lang.annotation. ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy. RUNTIME)
+public @interface RequireRole {
+    UserRole[] value();
+}

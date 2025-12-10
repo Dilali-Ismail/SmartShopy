@@ -17,9 +17,11 @@ public class OrderDTO {
 
     private Long id;
     private CustomerDto customer;
-    private List<CreateOrderDTO.OrderItemDTO> items;
+    private List<OrderDTO.OrderItemDTO> items;
     private BigDecimal subtotalHT;
     private BigDecimal loyaltyDiscount;
+    private String promoCode;
+    private BigDecimal promoDiscount;
     private BigDecimal totalAfterDiscount;
     private BigDecimal tva;
     private BigDecimal totalTTC;

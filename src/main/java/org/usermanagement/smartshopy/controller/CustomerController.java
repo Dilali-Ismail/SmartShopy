@@ -11,6 +11,8 @@ import org.usermanagement.smartshopy.dto.request.CreateCustomerDTO;
 import org.usermanagement.smartshopy.dto.request.UpdateCustomerDTO;
 import org.usermanagement.smartshopy.dto.response.CustomerDto;
 import org.usermanagement.smartshopy.enums.CustomerTier;
+import org.usermanagement.smartshopy.enums.UserRole;
+import org.usermanagement.smartshopy.security.RequireRole;
 import org.usermanagement.smartshopy.service.Customer.CustomerService;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<CustomerDto> createCustomer(
             @Valid @RequestBody CreateCustomerDTO dto) {
 
@@ -31,6 +34,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<List<CustomerDto>> getAllCustomers() {
         List<CustomerDto> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(customers);
@@ -45,6 +49,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<CustomerDto> updateCustomer(
             @Parameter(description = "ID du client", example = "1")
             @PathVariable Long id,
@@ -55,6 +60,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<Map<String, String>> deleteCustomer(
             @Parameter(description = "ID du client", example = "1")
             @PathVariable Long id) {
@@ -64,6 +70,7 @@ public class CustomerController {
     }
 
     @GetMapping("/tier/{tier}")
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<List<CustomerDto>> getCustomersByTier(
             @Parameter(description = "Niveau de fidélité", example = "SILVER")
             @PathVariable CustomerTier tier) {

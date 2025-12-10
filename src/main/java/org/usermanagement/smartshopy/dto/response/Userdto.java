@@ -17,6 +17,7 @@ public class Userdto {
     private long id;
     private String username;
     private UserRole role;
+    private Long customerId;
     private LocalDate createdAt;
 
 }

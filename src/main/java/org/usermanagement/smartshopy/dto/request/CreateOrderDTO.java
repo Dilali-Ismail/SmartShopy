@@ -4,6 +4,7 @@ package org.usermanagement.smartshopy.dto.request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -22,6 +23,9 @@ public class CreateOrderDTO {
     @Valid
     private List<OrderItemDTO> items;
 
+    @Size(max = 50, message = "Le code promo ne doit pas dépasser 50 caractères")
+    private String promoCode;
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -34,9 +38,6 @@ public class CreateOrderDTO {
 
         @NotNull(message = "La quantité est obligatoire")
         private Integer quantity;
-
-        @NotNull(message = "La quantité est obligatoire")
-        private BigDecimal unitPrice;
     }
 
 }

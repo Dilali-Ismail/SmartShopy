@@ -13,5 +13,4 @@ public interface AuthService {
      void logout(HttpSession session);
      Userdto getCurrentUser(HttpSession session);
 
-
 }

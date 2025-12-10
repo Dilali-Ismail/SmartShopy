@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.usermanagement.smartshopy.dto.request.LoginRequestDTO;
 import org.usermanagement.smartshopy.dto.response.Userdto;
 import org.usermanagement.smartshopy.entity.User;
+import org.usermanagement.smartshopy.enums.UserRole;
 import org.usermanagement.smartshopy.exception.UnautorizedException;
 import org.usermanagement.smartshopy.mapper.UserMapper;
 import org.usermanagement.smartshopy.repository.UserRepository;
@@ -52,4 +53,35 @@ public class AuthServiceImpl implements AuthService{
        }
        return user;
    }
+
+    public boolean isAuthenticated(HttpSession session) {
+        if (session == null) {
+            return false;
+        }
+        return session.getAttribute(Session_User_key) != null;
+    }
+
+    public boolean hasRole(HttpSession session, UserRole role) {
+        if (!isAuthenticated(session)) {
+            return false;
+        }
+
+        Userdto user = (Userdto) session.getAttribute(Session_User_key);
+        return user. getRole() == role;
+    }
+    public boolean hasAnyRole(HttpSession session, UserRole... roles) {
+        if (!isAuthenticated(session)) {
+            return false;
+        }
+
+        Userdto user = (Userdto) session.getAttribute(Session_User_key);
+
+        for (UserRole role : roles) {
+            if (user.getRole() == role) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -39,6 +39,13 @@ public class Order {
     @Builder.Default
     private BigDecimal loyaltyDiscount = BigDecimal.ZERO;
 
+    @Column(length = 50)
+    private String promoCode;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal promoDiscount = BigDecimal.ZERO;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAfterDiscount;
 
@@ -71,6 +78,10 @@ public class Order {
     @Column
     private LocalDateTime confirmedAt;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Payment> payments = new ArrayList<>();
+
 
     // ========== METHODES HELPER ==========
 
@@ -93,7 +104,10 @@ public class Order {
     }
 
 
-
+    public void addPayment(Payment payment) {
+        payments.add(payment);
+        payment.setOrder(this);
+    }
 
 
 
